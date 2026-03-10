@@ -41,6 +41,7 @@ function App() {
           <Routes>
             <Route path="/" element={<ExperimentList />} />
             <Route path="/new" element={<ExperimentForm />} />
+            <Route path="/edit/:id" element={<ExperimentForm />} />
           </Routes>
         </main>
 

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Copy, Save, Mic } from 'lucide-react';
-import { addExperiment, getAllExperiments } from '../db';
+import { addExperiment, getAllExperiments, getExperiment, updateExperiment } from '../db';
 import DynamicRecipeTable from '../components/DynamicRecipeTable';
 import TouchSelect from '../components/TouchSelect';
 import PhotoUploader from '../components/PhotoUploader';
@@ -9,6 +9,7 @@ import CloneModal from '../components/CloneModal';
 
 export default function ExperimentForm() {
     const navigate = useNavigate();
+    const { id } = useParams();
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('matte');
     const [isListening, setIsListening] = useState(false);
@@ -62,6 +63,26 @@ export default function ExperimentForm() {
         photos: []
     });
 
+    useEffect(() => {
+        if (id) {
+            // Edit 모드일 때 기존 데이터 불러오기
+            const fetchExperiment = async () => {
+                setLoading(true);
+                try {
+                    const data = await getExperiment(Number(id));
+                    if (data) {
+                        setFormData(data);
+                    }
+                } catch (err) {
+                    console.error("Failed to load experiment:", err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchExperiment();
+        }
+    }, [id]);
+
     const handleMatteRecipeChange = (newRecipe) => setFormData(prev => ({ ...prev, matteRecipe: newRecipe }));
     const handleTopRecipeChange = (newRecipe) => setFormData(prev => ({ ...prev, topRecipe: newRecipe }));
 
@@ -92,8 +113,14 @@ export default function ExperimentForm() {
     const handleSave = async () => {
         setLoading(true);
         try {
-            const newExp = { ...formData, date: new Date().toISOString() };
-            await addExperiment(newExp);
+            if (id) {
+                // 기존 실험 기록 덮어쓰기
+                await updateExperiment({ ...formData, id: Number(id) });
+            } else {
+                // 신규 기록 생성하기
+                const newExp = { ...formData, date: new Date().toISOString() };
+                await addExperiment(newExp);
+            }
             navigate('/');
         } catch (err) {
             console.error(err);
@@ -145,15 +172,27 @@ export default function ExperimentForm() {
 
     return (
         <div className="max-w-md mx-auto animate-fade-in relative flex flex-col min-h-screen pb-64">
-            <div className="flex justify-between items-center mb-6 pt-4 px-4 bg-gray-50 dark:bg-gray-900 sticky top-0 z-10 w-full backdrop-blur-md bg-opacity-90 py-3 inset-x-0">
-                <h2 className="text-2xl font-bold">DTF 테스트 기록 V4</h2>
-                <button
-                    onClick={openCloneModal}
-                    className="flex items-center space-x-2 text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/50 px-3 py-2 rounded-lg font-bold shadow-sm"
-                >
-                    <Copy size={18} />
-                    <span className="text-sm">레시피 복제</span>
-                </button>
+            <div className="flex justify-between items-center px-4 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 sticky top-0 z-20 shadow-sm">
+                <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600">
+                    {id ? '실험 기록 수정' : '새로운 실험 기록'}
+                </h2>
+                <div className="flex space-x-2">
+                    <button
+                        onClick={openCloneModal}
+                        className="flex items-center space-x-2 text-primary-600 dark:text-primary-400 bg-primary-100 dark:bg-primary-900/50 px-3 py-2 rounded-lg font-bold shadow-sm"
+                    >
+                        <Copy size={18} />
+                        <span className="text-sm">레시피 복제</span>
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        className="flex items-center space-x-2 text-white bg-primary-600 hover:bg-primary-700 px-3 py-2 rounded-lg font-bold shadow-sm transition-colors"
+                        disabled={loading}
+                    >
+                        <Save size={18} />
+                        <span className="text-sm">{loading ? '저장 중...' : '저장'}</span>
+                    </button>
+                </div>
             </div>
 
             <CloneModal
@@ -363,7 +402,7 @@ export default function ExperimentForm() {
                     className="w-full flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white p-4 rounded-2xl text-xl font-bold shadow-xl transition-transform active:scale-95 disabled:opacity-50"
                 >
                     <Save size={24} />
-                    <span>모든 테스트 결과 저장하기</span>
+                    <span>{id ? '수정된 테스트 결과 저장하기' : '모든 테스트 결과 저장하기'}</span>
                 </button>
             </div>
         </div>

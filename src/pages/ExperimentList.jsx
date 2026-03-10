@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
-import { Download, Filter, Calendar, Beaker, Package } from 'lucide-react';
+import { Download, Filter, Calendar, Beaker, Package, Edit, Trash2 } from 'lucide-react';
 import { getAllExperiments, deleteExperiment } from '../db';
 
 export default function ExperimentList() {
+    const navigate = useNavigate();
     const [experiments, setExperiments] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
 
@@ -183,12 +185,20 @@ export default function ExperimentList() {
                                     <Calendar size={12} className="mr-1" />
                                     <span>{new Date(exp.date).toLocaleDateString()} {new Date(exp.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
-                                <button
-                                    onClick={() => handleDelete(exp.id)}
-                                    className="text-red-400 hover:text-red-600 text-xs px-2 py-1 font-bold"
-                                >
-                                    삭제
-                                </button>
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => navigate(`/edit/${exp.id}`)}
+                                        className="text-blue-500 hover:text-blue-700 text-xs px-2 py-1 font-bold flex items-center bg-blue-50 dark:bg-blue-900/20 rounded"
+                                    >
+                                        <Edit size={12} className="mr-1" />수정
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(exp.id)}
+                                        className="text-red-400 hover:text-red-600 text-xs px-2 py-1 font-bold flex items-center bg-red-50 dark:bg-red-900/20 rounded"
+                                    >
+                                        <Trash2 size={12} className="mr-1" />삭제
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Recipe Summary */}
