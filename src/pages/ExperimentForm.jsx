@@ -16,7 +16,7 @@ export default function ExperimentForm() {
     const [isCloneModalOpen, setCloneModalOpen] = useState(false);
     const [pastExperiments, setPastExperiments] = useState([]);
 
-    const defaultRecipeRow = { materialName: '', amount: '', ratio: '' };
+    const defaultRecipeRow = { materialName: '', nvPercent: '', amount: '', nvg: '', ratio: '' };
 
     const [formData, setFormData] = useState({
         matteRecipe: [{ ...defaultRecipeRow }],
@@ -335,8 +335,8 @@ export default function ExperimentForm() {
                         type="button"
                         onClick={toggleVoiceMemo}
                         className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm ${isListening
-                                ? 'bg-red-500 text-white animate-pulse'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                            ? 'bg-red-500 text-white animate-pulse'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
                             }`}
                     >
                         <Mic size={14} className={isListening ? 'animate-bounce' : ''} />

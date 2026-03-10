@@ -7,7 +7,7 @@ export default function DynamicRecipeTable({ title, recipe, onChange, colorTheme
 
     const addRow = () => {
         if (recipe.length < MAX_ROWS) {
-            onChange([...recipe, { materialName: '', amount: '', ratio: '' }]);
+            onChange([...recipe, { materialName: '', nvPercent: '', amount: '', nvg: '', ratio: '' }]);
         }
     };
 
@@ -15,7 +15,7 @@ export default function DynamicRecipeTable({ title, recipe, onChange, colorTheme
         const newRecipe = [...recipe];
         newRecipe.splice(index, 1);
         if (newRecipe.length === 0) {
-            newRecipe.push({ materialName: '', amount: '', ratio: '' });
+            newRecipe.push({ materialName: '', nvPercent: '', amount: '', nvg: '', ratio: '' });
         }
         onChange(newRecipe);
     };
@@ -37,30 +37,17 @@ export default function DynamicRecipeTable({ title, recipe, onChange, colorTheme
             if (row.trim() === '') continue;
             const cols = row.split('\t');
 
-            const materialName = cols[0] ? cols[0].trim() : '';
-
             // 헤더 줄 복사 시 건너뛰기
             const isHeader = cols.some(c => c && (c.includes('NV(%)') || c.trim() === 'g' || c.includes('ONE COTTING') || c.includes('Top')));
             if (isHeader) continue;
 
-            let amount = '';
-            let ratio = '';
+            const materialName = cols[0] ? cols[0].trim() : '';
+            const nvPercent = cols[1] ? cols[1].trim() : '';
+            const amount = cols[2] ? cols[2].trim() : '';
+            const nvg = cols[3] ? cols[3].trim() : '';
+            const ratio = cols[4] ? cols[4].trim() : '';
 
-            // 엑셀 원본 구조: [재료명, NV(%), g(투입량), NV g, 비율]
-            if (cols.length >= 3) {
-                // cols[2]가 실제 투입량(g)
-                amount = cols[2] ? cols[2].trim() : '';
-            } else if (cols.length === 2) {
-                // 만약 2칸만 복사한 경우 대비
-                amount = cols[1] ? cols[1].trim() : '';
-            }
-
-            if (cols.length >= 5) {
-                // cols[4]가 실제 비율
-                ratio = cols[4] ? cols[4].trim() : '';
-            }
-
-            parsedRecipe.push({ materialName, amount, ratio });
+            parsedRecipe.push({ materialName, nvPercent, amount, nvg, ratio });
             if (parsedRecipe.length >= MAX_ROWS) break;
         }
 
@@ -107,10 +94,10 @@ export default function DynamicRecipeTable({ title, recipe, onChange, colorTheme
 
             {showPaste && (
                 <div className="p-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-100 dark:border-gray-700 animate-fade-in">
-                    <p className="text-xs text-gray-500 mb-2 font-medium">엑셀에서 복사한 데이터(재료명, 투입량, 비율) 배열을 아래 빈칸에 붙여넣기(Ctrl+V) 하세요.</p>
+                    <p className="text-xs text-gray-500 mb-2 font-medium">엑셀 표를 통째로 복사해서 빈칸에 붙여넣기(Ctrl+V) 하세요.</p>
                     <textarea
                         className="w-full h-20 p-2 text-sm border rounded focus:ring-2 focus:ring-primary-500 outline-none"
-                        placeholder="여기에 붙여넣기 해주세요..."
+                        placeholder="[재료명, NV(%), g, NV g, 비율] 5칸 표를 여기에 붙여넣어주세요..."
                         onChange={handlePasteExcel}
                         autoFocus
                     />
@@ -118,47 +105,71 @@ export default function DynamicRecipeTable({ title, recipe, onChange, colorTheme
             )}
 
             <div className="overflow-x-auto pb-2">
-                <div className="min-w-[420px] px-2 pt-2">
+                <div className="min-w-[650px] px-2 pt-2">
                     {/* Header */}
-                    <div className="grid grid-cols-12 gap-1 mb-2 font-bold text-[11px] text-center text-gray-400">
-                        <div className="col-span-5 text-left pl-1">재료명 (Material)</div>
-                        <div className="col-span-3">투입량</div>
-                        <div className="col-span-3">비율 (%)</div>
-                        <div className="col-span-1"></div>
+                    <div className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_40px] gap-2 mb-2 font-bold text-[11px] text-center text-gray-400 items-center">
+                        <div className="text-left pl-1">재료명 (Material)</div>
+                        <div>NV(%)</div>
+                        <div>투입량(g)</div>
+                        <div>NV g</div>
+                        <div>비율(%)</div>
+                        <div></div>
                     </div>
 
                     {/* Rows */}
                     <div className="space-y-1.5">
                         {recipe.map((row, idx) => (
-                            <div key={idx} className="grid grid-cols-12 gap-1 items-center">
-                                <div className="col-span-5">
+                            <div key={idx} className="grid grid-cols-[3fr_1fr_1fr_1fr_1fr_40px] gap-2 items-center">
+                                <div>
                                     <input
                                         type="text"
-                                        value={row.materialName}
+                                        value={row.materialName || ''}
                                         onChange={(e) => handleChange(idx, 'materialName', e.target.value)}
                                         placeholder="재료명"
                                         className={inputClass}
                                     />
                                 </div>
-                                <div className="col-span-3">
+                                <div>
                                     <input
                                         type="number"
-                                        value={row.amount}
+                                        step="0.01"
+                                        value={row.nvPercent || ''}
+                                        onChange={(e) => handleChange(idx, 'nvPercent', e.target.value)}
+                                        placeholder="%"
+                                        className={`${inputClass} text-center`}
+                                    />
+                                </div>
+                                <div>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={row.amount || ''}
                                         onChange={(e) => handleChange(idx, 'amount', e.target.value)}
-                                        placeholder="0"
+                                        placeholder="g"
                                         className={`${inputClass} text-center`}
                                     />
                                 </div>
-                                <div className="col-span-3">
+                                <div>
                                     <input
                                         type="number"
-                                        value={row.ratio}
-                                        onChange={(e) => handleChange(idx, 'ratio', e.target.value)}
+                                        step="0.01"
+                                        value={row.nvg || ''}
+                                        onChange={(e) => handleChange(idx, 'nvg', e.target.value)}
                                         placeholder="0"
                                         className={`${inputClass} text-center`}
                                     />
                                 </div>
-                                <div className="col-span-1 flex justify-center">
+                                <div>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={row.ratio || ''}
+                                        onChange={(e) => handleChange(idx, 'ratio', e.target.value)}
+                                        placeholder="%"
+                                        className={`${inputClass} text-center`}
+                                    />
+                                </div>
+                                <div className="flex justify-center">
                                     <button
                                         type="button"
                                         onClick={() => removeRow(idx)}
