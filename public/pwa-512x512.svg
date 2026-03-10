@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#3b82f6" rx="40"/>
+  <text x="96" y="104" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="52" fill="#ffffff" text-anchor="middle">DTF</text>
+  <text x="96" y="144" font-family="system-ui, -apple-system, sans-serif" font-weight="bold" font-size="24" fill="#bfdbfe" text-anchor="middle">실험</text>
+  <path d="M76 32h40v20l16 24H60l16-24V32z" fill="#eff6ff" opacity="0.9"/>
+  <path d="M68 64h56l8 12H60l8-12z" fill="#60a5fa"/>
+</svg>
