@@ -37,10 +37,28 @@ export default function DynamicRecipeTable({ title, recipe, onChange, colorTheme
             if (row.trim() === '') continue;
             const cols = row.split('\t');
 
-            // Assuming Excel has at least 3 columns: Material, Amount, Ratio
             const materialName = cols[0] ? cols[0].trim() : '';
-            const amount = cols[1] ? cols[1].trim() : '';
-            const ratio = cols[2] ? cols[2].trim() : '';
+
+            // 헤더 줄 복사 시 건너뛰기
+            const isHeader = cols.some(c => c && (c.includes('NV(%)') || c.trim() === 'g' || c.includes('ONE COTTING') || c.includes('Top')));
+            if (isHeader) continue;
+
+            let amount = '';
+            let ratio = '';
+
+            // 엑셀 원본 구조: [재료명, NV(%), g(투입량), NV g, 비율]
+            if (cols.length >= 3) {
+                // cols[2]가 실제 투입량(g)
+                amount = cols[2] ? cols[2].trim() : '';
+            } else if (cols.length === 2) {
+                // 만약 2칸만 복사한 경우 대비
+                amount = cols[1] ? cols[1].trim() : '';
+            }
+
+            if (cols.length >= 5) {
+                // cols[4]가 실제 비율
+                ratio = cols[4] ? cols[4].trim() : '';
+            }
 
             parsedRecipe.push({ materialName, amount, ratio });
             if (parsedRecipe.length >= MAX_ROWS) break;
